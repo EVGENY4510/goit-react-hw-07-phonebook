@@ -1,12 +1,25 @@
 import css from './ContactList.module.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteContact } from 'redux/contacts/slice';
+import { selectFilter } from 'redux/filter/selectors';
+import { selectContacts } from 'redux/contacts/selectors';
+import { deleteContact } from 'redux/contacts/operations';
+import Loader from 'components/Loader/Loader';
 
 export default function ContactList() {
-  const contacts = useSelector(state => state.contacts);
-  const filter = useSelector(state => state.filter);
+  const { contacts, isLoading, error } = useSelector(selectContacts);
+  const filter = useSelector(selectFilter);
 
   const dispatch = useDispatch();
+  if (isLoading) {
+    return (
+      <div>
+        <Loader />
+      </div>
+    );
+  }
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   const displaySearchResult = () => {
     const filteredContacts = contacts.filter(contact => {
@@ -18,12 +31,12 @@ export default function ContactList() {
     return filteredContacts.map(contact => (
       <li key={contact.id} className={css.item}>
         <p>
-          - {contact.name} :<span className={css.span}>{contact.number}</span>
+          - {contact.name} :<span className={css.span}>{contact.phone}</span>
         </p>
         <button
           className={css.deleteButton}
           type="button"
-          onClick={() => dispatch(deleteContact({ id: contact.id }))}
+          onClick={() => dispatch(deleteContact(contact.id))}
         >
           Delete
         </button>
